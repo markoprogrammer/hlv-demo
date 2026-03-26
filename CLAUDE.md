@@ -3,7 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Context
-You are building the Hooloovoo (hooloovoo.rs) website — a software development company.
+You are rebuilding the Hooloovoo website ([hooloovoo.rs](https://hooloovoo.rs)) — a software development company.
+The live site at `hooloovoo.rs` is the content reference — use `/scrape-and-convert` to extract page content from it.
 All design must follow the HLV brand style guide.
 
 ---
@@ -42,19 +43,13 @@ app/
     home/
       index.tsx         # Route entry point (export default + optional loader/meta)
       components/       # Components that belong only to this page
-        HeroSection.tsx
-        ServicesSection.tsx
-        ValuesSection.tsx
     about/
       index.tsx
       components/
-        TeamSection.tsx
-        MissionSection.tsx
     contact/
       index.tsx
       components/
-        ContactForm.tsx
-  lib/                  # Hooks, utilities (e.g. useAnimatedSvg.ts)
+  lib/                  # Hooks, utilities
 src/
   components/           # Shared components used across multiple pages (Navbar, Footer, Button...)
 react-router.config.ts  # Framework config — vercelPreset goes here
@@ -135,6 +130,30 @@ Font: **Red Hat Display** (Google Fonts)
 
 ---
 
+## SSR Data Loading
+
+React Router v7 uses file-based loaders for SSR data. Export a `loader` from any route file:
+
+```tsx
+// app/pages/about/index.tsx
+import type { Route } from './+types/index'
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const data = await fetchSomething()
+  return { data }
+}
+
+export default function AboutPage({ loaderData }: Route.ComponentProps) {
+  return <div>{loaderData.data}</div>
+}
+```
+
+- Loaders run server-side; never expose secrets in the component
+- Use `Route.LoaderArgs` / `Route.ComponentProps` from the generated `+types/` for type safety
+- `meta` export receives `loaderData` for dynamic titles
+
+---
+
 ## Coding Conventions
 
 - Components: PascalCase (`HeroSection.tsx`)
@@ -176,8 +195,15 @@ Pre-defined skills are available in `.claude/skills/`:
 
 ## Workflow
 
-When you receive a task:
+**Starting from scratch:** `/init-project` → scaffolds the full app skeleton
+
+**Adding a page:** `/add-page` → creates route file, registers in `routes.ts`, adds nav link
+
+**Pulling content from the live site:** `/scrape-and-convert <url>` → extracts content and rebuilds as an HLV page
+
+**Finishing work:** `/ship` → verify build → code review → commit → deploy to Vercel
+
+When working on any task:
 1. Read existing files before making changes
-2. Install dependencies with `bun add`
-3. Run the dev server with `bun run dev`
-4. Always verify there are no TypeScript errors before finishing
+2. Install dependencies with `bun add` (never npm/yarn)
+3. Always verify there are no TypeScript errors before finishing (`bun run typecheck`)
