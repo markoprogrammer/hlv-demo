@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Show & Grow — Claude Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #4fc273;
+      --lime: #bbff66;
+      --black: #000000;
+      --surface: #1a1a1a;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Red Hat Display', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── SLIDESHOW ── */
+    .slideshow {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      transition: transform 0.6s cubic-bezier(0.77, 0, 0.18, 1);
+      will-change: transform;
+    }
+
+    .slide {
+      min-width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 80px 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .inner {
+      max-width: 960px;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── BLOB ── */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-24px); }
+    }
+    @keyframes floatR {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(20px); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .blob-a { animation: float  9s ease-in-out infinite; }
+    .blob-b { animation: floatR 13s ease-in-out infinite; }
+
+    /* ── NAV BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(79,194,115,0.12);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-sq {
+      width: 34px; height: 34px;
+      background: var(--green);
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 0.58rem;
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--black);
+      text-align: center;
+    }
+
+    .nav-tag {
+      font-size: 0.78rem;
+      color: var(--green);
+      border: 1px solid var(--green);
+      padding: 4px 14px;
+      border-radius: 100px;
+      font-weight: 600;
+    }
+
+    /* ── DOTS ── */
+    .dots {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .dot.active {
+      background: var(--green);
+      transform: scale(1.4);
+    }
+
+    /* ── ARROWS ── */
+    .arrow {
+      position: fixed;
+      bottom: 24px;
+      z-index: 200;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.4);
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      user-select: none;
+    }
+
+    .arrow:hover {
+      background: rgba(79,194,115,0.15);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .arrow.prev { right: calc(50% + 80px); }
+    .arrow.next { left: calc(50% + 80px); }
+
+    /* ── SLIDE COUNTER ── */
+    .counter {
+      position: fixed;
+      bottom: 36px;
+      right: 48px;
+      z-index: 200;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.2);
+      font-weight: 500;
+    }
+
+    /* ────────────────────────────────
+       SLIDE CONTENT STYLES
+    ──────────────────────────────── */
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    h1 em { color: var(--green); font-style: normal; }
+
+    h2 {
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+
+    h2 em { color: var(--green); font-style: normal; }
+
+    .sub {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    /* HERO */
+    #s1 { text-align: center; }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.55);
+      max-width: 580px;
+      margin: 0 auto 44px;
+      line-height: 1.65;
+      font-weight: 400;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: var(--surface);
+      border: 1px solid rgba(79,194,115,0.25);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* AGENDA */
+    .agenda-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .agenda-item {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 18px;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 18px 22px;
+      transition: border-color 0.2s;
+    }
+
+    .agenda-item:hover { border-color: rgba(79,194,115,0.35); }
+
+    .anum {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .atitle {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .adesc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+    }
+
+    .atime {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.25);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* STACK */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+
+    .stack-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 28px 16px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .stack-card:hover { border-color: var(--green); transform: translateY(-4px); }
+
+    .sicon { font-size: 1.8rem; margin-bottom: 10px; }
+    .sname { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .srole { font-size: 0.72rem; color: rgba(255,255,255,0.35); font-weight: 400; }
+
+    /* SKILLS */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 36px;
+    }
+
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .skill-card:hover { border-color: rgba(79,194,115,0.35); }
+
+    .scmd {
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: var(--green);
+      background: rgba(79,194,115,0.1);
+      padding: 3px 9px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .stitle { font-size: 0.88rem; font-weight: 700; margin-bottom: 5px; }
+    .sdesc { font-size: 0.76rem; color: rgba(255,255,255,0.4); font-weight: 400; line-height: 1.5; }
+
+    /* WORKFLOW */
+    .workflow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .wf {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .wf.hi { border-color: var(--green); color: var(--green); }
+    .wfarr { color: rgba(255,255,255,0.2); font-size: 1.1rem; }
+
+    .wf-note {
+      margin-top: 20px;
+      padding: 16px 22px;
+      border: 1px solid rgba(187,255,102,0.25);
+      border-radius: 14px;
+      background: rgba(187,255,102,0.04);
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .wf-note strong { color: var(--lime); }
+
+    /* STORY SLIDE */
+    .story-row {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 32px;
+      align-items: start;
+      margin-top: 20px;
+    }
+
+    .story-text {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+      font-weight: 400;
+      margin-bottom: 20px;
+    }
+
+    .story-text strong { color: var(--white); font-weight: 700; }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid rgba(79,194,115,0.25);
+      border-radius: 12px;
+      padding: 14px 20px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-num {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-lbl {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.35);
+      font-weight: 500;
+    }
+
+    .sites-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .sites-col::-webkit-scrollbar { width: 3px; }
+    .sites-col::-webkit-scrollbar-track { background: transparent; }
+    .sites-col::-webkit-scrollbar-thumb { background: rgba(79,194,115,0.3); border-radius: 2px; }
+
+    .site-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-decoration: none;
+      color: var(--white);
+      transition: border-color 0.2s;
+    }
+
+    .site-card:hover { border-color: var(--green); }
+
+    .site-icon { font-size: 1.2rem; }
+    .site-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 1px; }
+    .site-url  { font-size: 0.7rem; color: rgba(255,255,255,0.35); font-weight: 400; }
+
+    .seo-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .seo-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--green);
+      background: rgba(79,194,115,0.08);
+      border: 1px solid rgba(79,194,115,0.2);
+      padding: 4px 10px;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .seo-tag:hover {
+      background: rgba(79,194,115,0.2);
+      border-color: var(--green);
+    }
+
+    .sites-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      padding: 0 4px;
+      margin-bottom: 2px;
+    }
+
+    .site-card-dim {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+
+    .site-card-dim:hover { opacity: 1; }
+
+    .site-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* CLOSING SLIDE */
+    .lessons-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .lesson-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .lesson-card:hover { border-color: rgba(79,194,115,0.35); }
+
+    .lesson-num {
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    .lesson-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .lesson-desc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.55;
+      font-weight: 400;
+    }
+
+    .closing-cta {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 24px;
+      border: 1px solid rgba(187,255,102,0.25);
+      border-radius: 14px;
+      background: rgba(187,255,102,0.04);
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 500;
+    }
+
+    .closing-cta code {
+      font-family: monospace;
+      background: rgba(79,194,115,0.12);
+      color: var(--green);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+
+    .closing-cta span:first-child { color: var(--lime); font-weight: 700; }
+
+    /* WOW MOMENTS */
+    .wow-moments {
+      margin-top: 20px;
+      margin-bottom: 16px;
+    }
+
+    .wow-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 10px;
+    }
+
+    .wow-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .wow-card {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: rgba(187,255,102,0.04);
+      border: 1px solid rgba(187,255,102,0.15);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .wow-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+    .wow-text {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.55;
+      font-weight: 400;
+    }
+
+    .wow-text strong { color: var(--lime); }
+
+    /* CLAUDE COMMANDS */
+    .cmd-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .cmd-card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .cmd-card:hover { border-color: rgba(79,194,115,0.4); }
+
+    .cmd-name {
+      font-family: monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green);
+      background: rgba(79,194,115,0.1);
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .cmd-desc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.55;
+      font-weight: 400;
+    }
+
+    .cmd-desc strong { color: rgba(255,255,255,0.85); }
+
+    .claude-quote {
+      margin-top: 24px;
+      padding: 20px 24px;
+      border: 1px solid rgba(187,255,102,0.2);
+      border-radius: 16px;
+      background: rgba(187,255,102,0.04);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      gap: 0 16px;
+    }
+
+    .quote-mark {
+      font-size: 3rem;
+      line-height: 1;
+      color: var(--lime);
+      font-weight: 900;
+      grid-row: 1 / 3;
+      padding-top: 4px;
+    }
+
+    .quote-text {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .quote-text strong { color: var(--white); }
+
+    .quote-author {
+      font-size: 0.75rem;
+      color: var(--lime);
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* CASE STUDY */
+    #s5 { text-align: center; }
+
+    .cs-box {
+      border: 1px solid rgba(79,194,115,0.35);
+      border-radius: 24px;
+      padding: 56px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cs-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 18px;
+    }
+
+    .cs-title {
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+
+    .cs-url {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 36px;
+    }
+
+    .cs-steps {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cs-step {
+      background: rgba(79,194,115,0.09);
+      border: 1px solid rgba(79,194,115,0.22);
+      border-radius: 100px;
+      padding: 7px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-sq">HOO<br>LOO<br>VOO</div>
+    HOOLOOVOO
+  </div>
+  <span class="nav-tag">⚡ AI Show &amp; Grow</span>
+</div>
+
+<!-- SLIDESHOW WRAPPER -->
+<div class="slideshow" id="slideshow">
+
+  <!-- SLIDE 1 — HERO -->
+  <div class="slide" id="s1">
+    <div class="blob blob-a" style="width:520px;height:520px;background:#4fc273;opacity:0.4;top:-120px;right:-160px;"></div>
+    <div class="blob blob-b" style="width:380px;height:380px;background:#bbff66;opacity:0.25;bottom:-100px;left:-120px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">⚡ AI Show &amp; Grow · 2025</div>
+      <h1>Od nule do produkcije<br><em>bez kucanja koda</em></h1>
+      <p class="hero-desc">
+        Kako Claude Code transformiše sate kucanja u minute pametnog usmeravanja — live demo pred vašim očima.
+      </p>
+      <div class="badge-row">
+        <span class="badge">Marko Manojlović · PGP Tim</span>
+        <span class="badge">30 min demo</span>
+        <span class="badge">React Router v7 · React 19 · Tailwind v4 · Bun</span>
+        <span class="badge">Deploy na Vercel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — MOJA PRIČA -->
+  <div class="slide" id="s2">
+    <div class="blob blob-b" style="width:400px;height:400px;background:#4fc273;opacity:0.15;top:-80px;right:-100px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Zašto sam tu</div>
+      <h2>Od komšijskih zahteva<br>do <em>4 live sajta</em></h2>
+
+      <div class="story-row">
+        <div class="story-col">
+          <p class="story-text">
+            Tokom faksa me uvek pitali — komšije, rodbina, prijatelji: <strong>"Ti si IT-evac, napravi mi sajt."</strong>
+            WordPress, hosting, plugini... ko da se bakće tim tokom studija.
+          </p>
+          <p class="story-text">
+            Kada je AI sazreo, otvorila se prilika. Tokom <strong>2025. počeo sam sa Cursorom</strong> — brzo,
+            lako, ali hteo sam ozbiljniji pristup. <strong>Claude Code</strong> je taj sledeći korak:
+            agent koji razume ceo projekat, prati pravila i radi konzistentno.
+          </p>
+          <p class="story-text">
+            Workflow koji funkcioniše: agent gradi u <strong>preview grani</strong>, proverim rezultat,
+            pa <strong>promote na prod</strong> jednim klikom. U svakom trenutku mogu da se
+            <strong>vratim na prethodnu verziju</strong> — git istorija, Vercel snapshoti, nema straha.
+          </p>
+          <p class="story-text">
+            Readonly sajtovi — idealan teren za eksperiment. Uz <strong>SEO optimizaciju</strong> koja radi:
+          </p>
+          <div class="seo-tags">
+            <a class="seo-tag" href="https://www.google.com/search?q=psiholog+Kragujevac" target="_blank">"psiholog Kragujevac"</a>
+            <a class="seo-tag" href="https://www.google.com/search?q=psiholog+za+decu+Kragujevac" target="_blank">"psiholog za decu Kragujevac"</a>
+            <a class="seo-tag" href="https://www.google.com/search?q=logoped+za+decu+Kragujevac" target="_blank">"logoped za decu Kragujevac"</a>
+            <a class="seo-tag" href="https://www.google.com/search?q=procena+nekretnine+Kragujevac" target="_blank">"procena nekretnine Kragujevac"</a>
+          </div>
+          <p class="story-text" style="color:rgba(255,255,255,0.3);font-size:0.82rem;margin-top:12px;">
+            Nije profitabilno. Ali sam naučio nešto, a njima učinio lepo. 🤷
+          </p>
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="stat-num">4</div>
+              <div class="stat-lbl">live sajta</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">40k</div>
+              <div class="stat-lbl">req / mesec</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">€0</div>
+              <div class="stat-lbl">hosting</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">15min</div>
+              <div class="stat-lbl">update → live</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sites-col">
+          <div class="sites-label">Za prijatelje</div>
+          <a class="site-card" href="https://www.logonova.rs" target="_blank">
+            <span class="site-icon">💛</span>
+            <div>
+              <div class="site-name">logonova</div>
+              <div class="site-url">logonova.rs</div>
+            </div>
+          </a>
+          <a class="site-card" href="https://www.psihologijam.rs" target="_blank">
+            <span class="site-icon">💙</span>
+            <div>
+              <div class="site-name">psihologijam</div>
+              <div class="site-url">psihologijam.rs</div>
+            </div>
+          </a>
+          <a class="site-card" href="https://termodomus.rs" target="_blank">
+            <span class="site-icon">🔴</span>
+            <div>
+              <div class="site-name">termodomus</div>
+              <div class="site-url">termodomus.rs</div>
+            </div>
+          </a>
+          <a class="site-card" href="https://www.procenanekretnina.rs" target="_blank">
+            <span class="site-icon">⚖️</span>
+            <div>
+              <div class="site-name">procenanekretnina</div>
+              <div class="site-url">procenanekretnina.rs</div>
+            </div>
+          </a>
+
+          <div class="sites-label" style="margin-top:8px;">Eksperimenti</div>
+          <a class="site-card site-card-dim" href="https://hlv-site.vercel.app" target="_blank">
+            <span class="site-icon">⚡</span>
+            <div>
+              <div class="site-name">hlv-site</div>
+              <div class="site-url">hlv-site.vercel.app · verzija tokom pripreme</div>
+            </div>
+          </a>
+          <div class="site-compare">
+            <a class="site-card site-card-dim" href="https://swiss-trade-hub.vercel.app" target="_blank">
+              <span class="site-icon">🔶</span>
+              <div>
+                <div class="site-name">swiss-trade-hub</div>
+                <div class="site-url">novi · swiss-trade-hub.vercel.app</div>
+              </div>
+            </a>
+            <a class="site-card site-card-dim" href="https://www.swisstrade-online.com" target="_blank">
+              <span class="site-icon">🕰️</span>
+              <div>
+                <div class="site-name">stari sajt</div>
+                <div class="site-url">swisstrade-online.com</div>
+              </div>
+            </a>
+          </div>
+          <a class="site-card site-card-dim" href="https://code-flow-blue.vercel.app" target="_blank">
+            <span class="site-icon">🔷</span>
+            <div>
+              <div class="site-name">code-flow</div>
+              <div class="site-url">code-flow-blue.vercel.app</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — ZAŠTO CLAUDE CODE -->
+  <div class="slide" id="s3">
+    <div class="blob blob-b" style="width:440px;height:440px;background:#4fc273;opacity:0.15;bottom:-100px;right:-100px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Zašto Claude Code</div>
+      <h2>Kao pravi <em>kolega</em> — ne alat</h2>
+      <p class="sub">Ne samo alat koji izvršava — razume kontekst, pamti ko si i ima intuiciju za tvoje namere.</p>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-name">/init</div>
+          <div class="cmd-desc">Analizira ceo projekat i automatski generiše <strong>CLAUDE.md</strong> — agent sam uči tvoj kod pre nego što počne da radi.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/cost</div>
+          <div class="cmd-desc">Prikazuje koliko je sesija koštala, koliko tokena i koliko vremena — puna transparentnost.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/context</div>
+          <div class="cmd-desc">Pokazuje popunjenost kontekst prozora. Kad je pun — <strong>/compact</strong> sabija bez gubitka konteksta.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/model</div>
+          <div class="cmd-desc">Menjaj model u letu — <strong>Opus</strong> za teške odluke, <strong>Sonnet</strong> za svakodnevni rad.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/memory</div>
+          <div class="cmd-desc">Agent pamti tvoje preference između sesija — ko si, kako radiš, šta voliš. Pravi kolega ne zaboravlja.</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name">/doctor</div>
+          <div class="cmd-desc">Dijagnostikuje setup — proverava da li je sve ispravno konfigurisano pre nego što počneš.</div>
+        </div>
+      </div>
+
+      <div class="wow-moments">
+        <div class="wow-label">⚡ Momenti koji su me oduševili</div>
+        <div class="wow-row" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="wow-card">
+            <div class="wow-icon">🧮</div>
+            <div class="wow-text">
+              Pitao sam ga koliko su me sve sesije ukupno koštale — sam napisao
+              <strong>cost.py skriptu</strong> koja prolazi kroz sve log fajlove i vraća sumarni izveštaj.
+            </div>
+          </div>
+          <div class="wow-card">
+            <div class="wow-icon">🔬</div>
+            <div class="wow-text">
+              Pitao sam ga kako je izgrađen — analizirao je <strong>sopstvene binarne fajlove</strong>
+              i objasnio svoju arhitekturu. Kao da ima pravu inteligenciju.
+            </div>
+          </div>
+          <div class="wow-card">
+            <div class="wow-icon">🧠</div>
+            <div class="wow-text">
+              Ima <strong>intuiciju</strong> — razume nameru, ne samo reči. Dok sam pravio template za demo,
+              <strong>sam je skontao</strong> da buildam pripremu, ne finalni sajt — i prilagodio se.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="claude-quote">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">
+          Cursor ima agenta — ali čekaš, klikćeš "Keep" ili "Reject", često pokvari nešto što je radilo.
+          Claude Code retko greši, a kad nije siguran — pita.
+          <strong>Osećaj kao da radiš sa kolegom koji poštuje tvoj kod.</strong>
+        </div>
+        <div class="quote-author">— Marko Manojlović</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — AGENDA -->
+  <div class="slide" id="s4">
+    <div class="blob blob-b" style="width:420px;height:420px;background:#4fc273;opacity:0.18;top:50%;left:-160px;transform:translateY(-50%);"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Agenda</div>
+      <h2>Šta nas <em>čeka</em></h2>
+      <p class="sub">1 sat · 30 min intro + demo · 15 min diskusija · 15 min Q&amp;A</p>
+
+      <div class="agenda-list">
+        <div class="agenda-item">
+          <div class="anum">01</div>
+          <div>
+            <div class="atitle">Intro — ko sam i zašto sam tu</div>
+            <div class="adesc">Moja priča, AI alati, 4 live sajta, zašto Claude Code.</div>
+          </div>
+          <div class="atime">5 min</div>
+        </div>
+        <div class="agenda-item">
+          <div class="anum">02</div>
+          <div>
+            <div class="atitle">Kako agent radi — CLAUDE.md i Skills</div>
+            <div class="adesc">Kontekst, pravila i veštine koje agent dobija pre nego što počne da radi.</div>
+          </div>
+          <div class="atime">5 min</div>
+        </div>
+        <div class="agenda-item">
+          <div class="anum">03</div>
+          <div>
+            <div class="atitle">🏗️ LIVE DEMO — Rebuild hooloovoo.rs</div>
+            <div class="adesc">Od praznog foldera do live sajta na Vercelu, uživo, bez kucanja koda.</div>
+          </div>
+          <div class="atime">15 min</div>
+        </div>
+        <div class="agenda-item">
+          <div class="anum">04</div>
+          <div>
+            <div class="atitle">Ključne lekcije + poziv na akciju</div>
+            <div class="adesc">Šta ne radi bez dobrog konteksta. Kada koristiti agenta, a kada ne.</div>
+          </div>
+          <div class="atime">5 min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — TECH STACK -->
+  <div class="slide" id="s5">
+    <div class="blob blob-a" style="width:460px;height:460px;background:#4fc273;opacity:0.18;top:-60px;right:-120px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Tech Stack</div>
+      <h2>Arhitektura bez <em>boilerplate-a</em></h2>
+      <p class="sub">Moderan, brz i skalabilan sajt — iz praznog foldera.</p>
+
+      <div class="stack-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stack-card">
+          <div class="sicon">⚡</div>
+          <div class="sname">Bun</div>
+          <div class="srole">Runtime &amp; Package Manager</div>
+        </div>
+        <div class="stack-card">
+          <div class="sicon">🛤️</div>
+          <div class="sname">React Router v7</div>
+          <div class="srole">Framework (SSR, loaders, actions)</div>
+        </div>
+        <div class="stack-card">
+          <div class="sicon">⚛️</div>
+          <div class="sname">React 19</div>
+          <div class="srole">UI Framework</div>
+        </div>
+        <div class="stack-card">
+          <div class="sicon">🎨</div>
+          <div class="sname">Tailwind v4</div>
+          <div class="srole">Styling</div>
+        </div>
+        <div class="stack-card">
+          <div class="sicon">🔷</div>
+          <div class="sname">Vite</div>
+          <div class="srole">Bundler</div>
+        </div>
+        <div class="stack-card">
+          <div class="sicon">▲</div>
+          <div class="sname">Vercel</div>
+          <div class="srole">Deployment</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — SKILLS -->
+  <div class="slide" id="s6">
+    <div class="blob blob-b" style="width:420px;height:420px;background:#bbff66;opacity:0.1;bottom:-100px;left:-100px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Agent Skills</div>
+      <h2>Konfiguracija agenta — <em>Skills</em></h2>
+      <p class="sub">Jednom napišeš, agent uvek radi konzistentno po tvojim standardima.</p>
+
+      <div class="skills-grid">
+        <div class="skill-card">
+          <div class="scmd">/scrape-and-convert</div>
+          <div class="stitle">Magija bez Copy-Paste-a</div>
+          <div class="sdesc">Izvlači sadržaj sa postojećeg sajta i gradi modernizovanu verziju po HLV dizajn sistemu.</div>
+        </div>
+        <div class="skill-card">
+          <div class="scmd">/frontend-design</div>
+          <div class="stitle">Dizajn na nivou produkcije</div>
+          <div class="sdesc">Anthropic-ov skill koji tera agenta da razmišlja o dizajnu pre nego što kuca kod.</div>
+        </div>
+        <div class="skill-card">
+          <div class="scmd">/add-page</div>
+          <div class="stitle">Nova stranica po standardu</div>
+          <div class="sdesc">Kreira folder, komponente, rutu i navigaciju — sve u jednom potezu.</div>
+        </div>
+        <div class="skill-card">
+          <div class="scmd">/code-review</div>
+          <div class="stitle">Automatski code review</div>
+          <div class="sdesc">Proverava TypeScript, HLV boje, React best practice i performanse.</div>
+        </div>
+        <div class="skill-card">
+          <div class="scmd">/verify-build</div>
+          <div class="stitle">Build verifikacija</div>
+          <div class="sdesc">Production build + bundle size analiza pre svakog deploya.</div>
+        </div>
+        <div class="skill-card">
+          <div class="scmd">/ship</div>
+          <div class="stitle">Sve u jednom</div>
+          <div class="sdesc">Build → Review → Commit → Preview deploy. Jedna komanda, ceo workflow.</div>
+        </div>
+      </div>
+
+      <div class="workflow">
+        <div class="wf">razvoj</div>
+        <div class="wfarr">→</div>
+        <div class="wf">/verify-build</div>
+        <div class="wfarr">→</div>
+        <div class="wf">/code-review</div>
+        <div class="wfarr">→</div>
+        <div class="wf">/commit-push</div>
+        <div class="wfarr">→</div>
+        <div class="wf hi">/deploy-vercel</div>
+      </div>
+      <div class="wf-note">
+        ili sve odjednom: <strong>/ship</strong> — agent sam prolazi kroz svaki korak i zaustavlja se ako nešto nije ok.
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — CASE STUDY -->
+  <div class="slide" id="s7">
+    <div class="blob blob-a" style="width:640px;height:640px;background:#4fc273;opacity:0.18;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+    <div class="inner">
+      <div class="cs-box">
+        <div class="cs-label">🏗️ Live Case Study</div>
+        <div class="cs-title">Rebuild<br>Hooloovoo sajta</div>
+        <div class="cs-url">hooloovoo.rs → novi sajt, uživo pred vama</div>
+        <div class="cs-steps">
+          <span class="cs-step">Prazan folder</span>
+          <span class="cs-step">CLAUDE.md + Skills</span>
+          <span class="cs-step">Jedan prompt</span>
+          <span class="cs-step">Scrape sadržaja</span>
+          <span class="cs-step">Build komponenti</span>
+          <span class="cs-step">/ship → live URL</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — KLJUČNE LEKCIJE -->
+  <div class="slide" id="s8">
+    <div class="blob blob-a" style="width:400px;height:400px;background:#bbff66;opacity:0.12;top:-80px;left:-100px;"></div>
+    <div class="blob blob-b" style="width:350px;height:350px;background:#4fc273;opacity:0.15;bottom:-80px;right:-80px;"></div>
+
+    <div class="inner">
+      <div class="eyebrow">Zaključak</div>
+      <h2>Šta da <em>poneseš</em> kući</h2>
+
+      <div class="lessons-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="lesson-card">
+          <div class="lesson-num">01</div>
+          <div class="lesson-title">CLAUDE.md je tvoj onboarding za agenta</div>
+          <div class="lesson-desc">Bez konteksta agent radi generički. Sa dobrim CLAUDE.md radi konzistentno po tvojim pravilima — svaki put.</div>
+        </div>
+        <div class="lesson-card">
+          <div class="lesson-num">02</div>
+          <div class="lesson-title">Skills su tvoji kompanijski standardi</div>
+          <div class="lesson-desc">Jednom definišeš workflow, agent ga prati. /ship, /code-review, /add-page — ne moraš da pamtiš ništa.</div>
+        </div>
+        <div class="lesson-card">
+          <div class="lesson-num">03</div>
+          <div class="lesson-title">Preview → Promote, uvek imaš izlaz</div>
+          <div class="lesson-desc">Agent gradi u preview. Ti proveriš. Vercel snapshotuje svaki deploy. Greška? Rollback za 10 sekundi.</div>
+        </div>
+        <div class="lesson-card">
+          <div class="lesson-num">04</div>
+          <div class="lesson-title">Počni sa naivnim projektom</div>
+          <div class="lesson-desc">Readonly sajt za prijatelja je idealan prvi projekat sa AI agentom. Nema pritiska, učiš, a nekome pomažeš.</div>
+        </div>
+        <div class="lesson-card" style="border-color:rgba(187,255,102,0.25);background:rgba(187,255,102,0.04);">
+          <div class="lesson-num" style="color:var(--lime);">05</div>
+          <div class="lesson-title">Agent ima intuiciju</div>
+          <div class="lesson-desc">Ne izvršava slepo — razume kontekst i nameru. Kad sam pravio template za demo, sam je skontao šta radim i prilagodio se.</div>
+        </div>
+        <div class="lesson-card" style="border-color:rgba(187,255,102,0.25);background:rgba(187,255,102,0.04);">
+          <div class="lesson-num" style="color:var(--lime);">VIZIJA</div>
+          <div class="lesson-title">AI CMS — budućnost malih biznisa</div>
+          <div class="lesson-desc">Većina malih biznisa će imati sajtove koje direktno edituje AI agent. CLAUDE.md + Skills = tvoj CMS. WordPress polako gubi primat.</div>
+        </div>
+      </div>
+
+      <div class="closing-cta">
+        <span>Probaj večeras →</span>
+        <code>bun create vite</code>
+        <span>+ otvori Claude Code i napravi sajt za nekog koga poznaješ</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end slideshow -->
+
+<!-- NAVIGATION -->
+<button class="arrow prev" id="prev" onclick="go(-1)">←</button>
+<div class="dots" id="dots"></div>
+<button class="arrow next" id="next" onclick="go(1)">→</button>
+<div class="counter" id="counter"></div>
+
+<script>
+  const total = 8;
+  let current = 0;
+
+  const slideshow = document.getElementById('slideshow');
+  const dotsEl = document.getElementById('dots');
+  const counterEl = document.getElementById('counter');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  // Build dots
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    current = Math.max(0, Math.min(total - 1, n));
+    slideshow.style.transform = `translateX(-${current * 100}vw)`;
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+    counterEl.textContent = `${current + 1} / ${total}`;
+    prevBtn.style.opacity = current === 0 ? '0.2' : '1';
+    nextBtn.style.opacity = current === total - 1 ? '0.2' : '1';
+  }
+
+  function go(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  });
+
+  goTo(0);
+</script>
+
+</body>
+</html>

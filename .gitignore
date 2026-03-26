@@ -1,0 +1,20 @@
+# Interni dokumenti — ne idu na javni repo
+*.pdf
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.react-router/
+
+# Environment varijable
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+.vercel
+.env*.local
