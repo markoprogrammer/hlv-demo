@@ -12,6 +12,7 @@
     "target": "ES2022",
     "strict": true,
     "noUncheckedSideEffectImports": true,
+    "noEmit": true,
     "rootDirs": [".", "./.react-router/types"]
   }
 }
