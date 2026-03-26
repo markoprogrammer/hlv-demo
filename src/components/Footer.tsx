@@ -15,6 +15,7 @@ export default function Footer() {
         <img
           src="https://hooloovoo.rs/wp-content/uploads/2020/06/hooloovoo_logo_desktop.png"
           alt="Hooloovoo"
+          loading="lazy"
           className="h-7 w-auto opacity-80"
         />
         <nav className="flex flex-wrap justify-center gap-6">

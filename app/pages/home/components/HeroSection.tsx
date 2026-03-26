@@ -69,7 +69,7 @@ function HeroSvg() {
       </g>
 
       {/* Center core */}
-      <circle cx="250" cy="250" r="38" fill="#0a0a0a" stroke="#4fc273" strokeOpacity="0.3" strokeWidth="1.5" />
+      <circle cx="250" cy="250" r="38" fill="#000000" stroke="#4fc273" strokeOpacity="0.3" strokeWidth="1.5" />
       <circle cx="250" cy="250" r="24" fill="#4fc273" fillOpacity="0.08" />
       <circle cx="250" cy="250" r="10" fill="#4fc273" fillOpacity="0.7" />
       <circle cx="250" cy="250" r="4" fill="#4fc273" />

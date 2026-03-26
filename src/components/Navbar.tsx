@@ -16,6 +16,7 @@ export default function Navbar() {
           <img
             src="https://hooloovoo.rs/wp-content/uploads/2020/06/hooloovoo_logo_desktop.png"
             alt="Hooloovoo"
+            loading="lazy"
             className="h-8 w-auto"
           />
         </Link>
