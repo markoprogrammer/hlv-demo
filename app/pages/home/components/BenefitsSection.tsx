@@ -9,32 +9,40 @@ const benefits = [
 
 export default function BenefitsSection() {
   return (
-    <section className="py-24 px-6 md:px-16 lg:px-24">
+    <section className="py-8 pb-16 px-6 md:px-16 lg:px-24">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-16 items-start">
-          <div className="md:w-1/3">
-            <h2 className="font-bold text-5xl text-white mb-6">
-              Zašto<br />
-              <span className="text-[#4fc273]">Hooloovoo?</span>
-            </h2>
-            <p className="text-white/50 text-lg leading-relaxed">
-              Stvaramo uslove da svako od nas dostigne maksimalni potencijal —
-              i na poslu i van njega.
-            </p>
-            <a
-              href="/posao"
-              className="inline-block mt-8 bg-black text-[#4fc273] font-bold text-lg px-8 py-4 rounded-2xl border border-[#4fc273] hover:bg-[#4fc273]/10 transition-colors"
-            >
-              Otvorene pozicije
-            </a>
+        <div className="border border-white/8 rounded-2xl overflow-hidden">
+          <div className="grid md:grid-cols-2 border-b border-white/8">
+            <div className="p-10 border-b md:border-b-0 md:border-r border-white/8">
+              <p className="text-[#4fc273] font-bold text-xs tracking-[0.3em] uppercase mb-3">Zašto Hooloovoo?</p>
+              <h2 className="font-bold text-4xl text-white leading-tight mb-4">
+                Uslovi za tvoj<br />maksimalni potencijal.
+              </h2>
+              <p className="text-white/40 text-sm leading-relaxed">
+                Stvaramo okruženje gde svako od nas može da dostigne maksimum — i na poslu i van njega.
+              </p>
+            </div>
+            <div className="p-10 flex flex-col justify-between">
+              <p className="text-white/25 text-xs uppercase tracking-widest">Otvorene pozicije</p>
+              <p className="font-extrabold text-7xl text-white leading-none">
+                We're<br /><span className="text-[#4fc273]">hiring.</span>
+              </p>
+              <a
+                href="/posao"
+                className="inline-block self-start bg-black text-[#4fc273] font-bold text-base px-6 py-3 rounded-2xl border border-[#4fc273] hover:bg-[#4fc273]/10 transition-colors"
+              >
+                Vidi pozicije →
+              </a>
+            </div>
           </div>
-
-          <div className="md:w-2/3 grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-y divide-white/8">
             {benefits.map((b) => (
-              <div key={b.title} className="bg-[#1a1a1a]/80 rounded-2xl p-6">
-                <span className="text-2xl mb-3 block">{b.icon}</span>
-                <h3 className="font-medium text-lg text-white mb-1">{b.title}</h3>
-                <p className="text-white/40 text-sm">{b.description}</p>
+              <div key={b.title} className="p-7 flex gap-4 hover:bg-white/2 transition-colors">
+                <span className="text-2xl flex-shrink-0">{b.icon}</span>
+                <div>
+                  <h3 className="font-bold text-white text-sm mb-1">{b.title}</h3>
+                  <p className="text-white/35 text-xs leading-snug">{b.description}</p>
+                </div>
               </div>
             ))}
           </div>

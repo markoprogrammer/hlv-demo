@@ -18,22 +18,32 @@ const values = [
 
 export default function ValuesSection() {
   return (
-    <section className="py-24 px-6 md:px-16 lg:px-24">
+    <section className="py-8 px-6 md:px-16 lg:px-24">
       <div className="max-w-7xl mx-auto">
-        <p className="text-[#4fc273] font-bold text-sm tracking-[0.3em] uppercase mb-4">HLV Framework</p>
-        <h2 className="font-bold text-5xl text-white mb-16">
-          "Želimo da budemo<br />
-          <span className="text-white/40">najbolji IT poslodavac u regionu."</span>
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <p className="text-[#4fc273] font-bold text-xs tracking-[0.3em] uppercase mb-3">HLV Framework</p>
+            <h2 className="font-bold text-5xl text-white leading-tight">Tri principa.<br />Jedna kultura.</h2>
+          </div>
+          <p className="text-white/40 text-base max-w-xs md:text-right hidden md:block">
+            "Želimo da budemo<br />
+            <span className="text-white/70">najbolji IT poslodavac u regionu."</span>
+          </p>
+        </div>
+        <div className="border border-white/8 rounded-2xl overflow-hidden divide-y divide-white/8">
           {values.map((value) => (
-            <div key={value.number} className="border border-[#4fc273]/40 rounded-2xl p-8 hover:border-[#4fc273] transition-colors group">
-              <p className="text-[#4fc273]/40 font-extrabold text-5xl mb-6 group-hover:text-[#4fc273]/60 transition-colors">
-                {value.number}
-              </p>
-              <h3 className="font-medium text-2xl text-white mb-4">{value.title}</h3>
-              <p className="text-white/50 text-base leading-relaxed">{value.description}</p>
+            <div key={value.number} className="grid md:grid-cols-12 group hover:bg-white/2 transition-colors">
+              <div className="md:col-span-2 px-8 py-7 flex items-center border-b md:border-b-0 md:border-r border-white/8">
+                <span className="font-extrabold text-5xl text-[#4fc273]/20 group-hover:text-[#4fc273]/40 transition-colors leading-none">
+                  {value.number}
+                </span>
+              </div>
+              <div className="md:col-span-3 px-8 py-7 flex items-center border-b md:border-b-0 md:border-r border-white/8">
+                <h3 className="font-bold text-2xl text-white">{value.title}</h3>
+              </div>
+              <div className="md:col-span-7 px-8 py-7 flex items-center">
+                <p className="text-white/50 text-base leading-relaxed">{value.description}</p>
+              </div>
             </div>
           ))}
         </div>
