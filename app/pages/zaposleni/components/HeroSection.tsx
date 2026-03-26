@@ -6,7 +6,7 @@ export default function HeroSection() {
           Pravi ljudi u timu
         </p>
         <h1 className="font-extrabold text-7xl leading-tight text-white mb-6">
-          200+ matori.
+          100+ matori.
         </h1>
         <p className="text-white/50 text-xl max-w-xl">
           Iskusni profesionalci koji rade samostalno, cene kvalitet

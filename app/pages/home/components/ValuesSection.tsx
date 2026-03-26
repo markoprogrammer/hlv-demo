@@ -11,7 +11,7 @@ const values = [
   },
   {
     number: '03',
-    title: 'Pobuni se, posvedi se',
+    title: 'Pobuni se, posveti se',
     description: 'Sloboda da dovediš u pitanje — i hrabrost da se potpuno posvetiš kada se odlučiš.',
   },
 ]
@@ -30,18 +30,22 @@ export default function ValuesSection() {
             <span className="text-white/70">najbolji IT poslodavac u regionu."</span>
           </p>
         </div>
-        <div className="border border-white/8 rounded-2xl overflow-hidden divide-y divide-white/8">
-          {values.map((value) => (
-            <div key={value.number} className="grid md:grid-cols-12 group hover:bg-white/2 transition-colors">
-              <div className="md:col-span-2 px-8 py-7 flex items-center border-b md:border-b-0 md:border-r border-white/8">
-                <span className="font-extrabold text-5xl text-[#4fc273]/20 group-hover:text-[#4fc273]/40 transition-colors leading-none">
+
+        <div className="space-y-0">
+          {values.map((value, idx) => (
+            <div
+              key={value.number}
+              className={`grid md:grid-cols-12 group py-8 ${idx < values.length - 1 ? 'border-b border-white/8' : ''}`}
+            >
+              <div className="md:col-span-2 mb-3 md:mb-0">
+                <span className="font-extrabold text-5xl text-[#4fc273]/15 group-hover:text-[#4fc273]/30 transition-colors leading-none">
                   {value.number}
                 </span>
               </div>
-              <div className="md:col-span-3 px-8 py-7 flex items-center border-b md:border-b-0 md:border-r border-white/8">
+              <div className="md:col-span-3 mb-2 md:mb-0 flex md:items-center">
                 <h3 className="font-bold text-2xl text-white">{value.title}</h3>
               </div>
-              <div className="md:col-span-7 px-8 py-7 flex items-center">
+              <div className="md:col-span-7 flex md:items-center">
                 <p className="text-white/50 text-base leading-relaxed">{value.description}</p>
               </div>
             </div>
