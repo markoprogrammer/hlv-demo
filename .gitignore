@@ -16,7 +16,6 @@ build/
 
 # TypeScript compiled output (noEmit, but safety net)
 **/*.js
-!*.config.js
 
 # OS
 .DS_Store
