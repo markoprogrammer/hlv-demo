@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Red Hat Display', sans-serif;
+  --color-primary: #4fc273;
+  --color-accent: #bbff66;
+  --color-bg: #000000;
+  --color-surface: #1a1a1a;
+}
